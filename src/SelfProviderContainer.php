@@ -6,7 +6,6 @@ namespace Kbondurant\SelfProviderContainer;
 
 use League\Container\ContainerAwareInterface;
 use League\Container\ContainerAwareTrait;
-use League\Container\DefinitionContainerInterface;
 use League\Container\Exception\NotFoundException;
 use Psr\Container\ContainerInterface;
 
@@ -20,7 +19,7 @@ class SelfProviderContainer implements ContainerAwareInterface, ContainerInterfa
     private array $registeredProviders = [];
 
     public function __construct(
-        protected mixed $definitionContainer = null,
+        protected mixed $registerContainer = null,
     ) {
     }
 
@@ -30,16 +29,13 @@ class SelfProviderContainer implements ContainerAwareInterface, ContainerInterfa
             throw new NotFoundException(sprintf('%s is not a self provided service or is already registered', $id));
         }
 
-        $container = $this->definitionContainer ?? $this->getContainer();
-
         /** @var SelfProvider | class-string $id */
-        $id::register($container);
+        $id::register($this->registerContainer ?? $this->getContainer());
+
         $this->registeredProviders[] = $id;
 
-        assert($this->container instanceof DefinitionContainerInterface);
-
         /** @var string $id */
-        return $this->container->get($id);
+        return $this->getContainer()->get($id);
     }
 
     public function has(string $id): bool
